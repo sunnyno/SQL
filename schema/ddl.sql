@@ -1,0 +1,155 @@
+CREATE TABLE TASK_SITE.banners (
+  b_id    NUMBER(11)           NOT NULL PRIMARY KEY,
+  b_url   VARCHAR(255)         NOT NULL,
+  b_show  NUMBER(11) DEFAULT 0 NOT NULL,
+  b_click NUMBER(11) DEFAULT 0 NOT NULL,
+  b_text  VARCHAR(255) DEFAULT NULL,
+  b_pic   VARCHAR(255) DEFAULT NULL
+);
+
+CREATE SEQUENCE b_seq;
+
+CREATE OR REPLACE TRIGGER b_trig_seq
+BEFORE INSERT ON TASK_SITE.Banners
+FOR EACH ROW
+WHEN (new.b_ID IS NULL)
+  BEGIN
+    SELECT B_SEQ.NEXTVAL
+    INTO :new.b_ID
+    FROM dual;
+  END;
+
+CREATE TABLE TASK_SITE.m2m_banners_pages (
+  b_id NUMBER(11) NOT NULL,
+  p_id NUMBER(11) NOT NULL,
+  PRIMARY KEY (b_id, p_id)
+);
+
+CREATE INDEX TASK_SITE.m2m_banners_pages_idx
+ON TASK_SITE.m2m_banners_pages (p_id);
+
+CREATE TABLE TASK_SITE.news (
+  n_id       NUMBER(11)   NOT NULL,
+  n_category NUMBER(11)   NOT NULL,
+  n_header   VARCHAR(255) NOT NULL,
+  n_text     VARCHAR(255) NOT NULL,
+  n_dt       TIMESTAMP    NOT NULL,
+  PRIMARY KEY (n_id)
+);
+
+CREATE SEQUENCE n_seq;
+
+CREATE INDEX news_idx
+ON TASK_SITE.news (n_category);
+
+CREATE OR REPLACE TRIGGER n_trig_seq
+BEFORE INSERT ON TASK_SITE.NEWS
+FOR EACH ROW
+WHEN (new.n_ID IS NULL)
+  BEGIN
+    SELECT n_SEQ.NEXTVAL
+    INTO :new.n_ID
+    FROM dual;
+  END;
+
+
+CREATE TABLE TASK_SITE.news_categories (
+  nc_id   NUMBER(11)   NOT NULL,
+  nc_name VARCHAR(255) NOT NULL,
+  PRIMARY KEY (nc_id)
+);
+
+CREATE SEQUENCE nc_seq;
+
+
+CREATE OR REPLACE TRIGGER nc_trig_seq
+BEFORE INSERT ON TASK_SITE.news_categories
+FOR EACH ROW
+WHEN (new.nc_ID IS NULL)
+  BEGIN
+    SELECT nc_SEQ.NEXTVAL
+    INTO :new.nc_ID
+    FROM dual;
+  END;
+
+
+CREATE TABLE TASK_SITE.pages (
+  p_id     NUMBER(11)   NOT NULL,
+  p_parent NUMBER(11) DEFAULT NULL,
+  p_name   VARCHAR(255) NOT NULL,
+  PRIMARY KEY (p_id)
+);
+
+CREATE SEQUENCE p_seq;
+
+CREATE INDEX pages_idx
+ON TASK_SITE.pages (p_parent);
+
+
+CREATE OR REPLACE TRIGGER p_trig_seq
+BEFORE INSERT ON TASK_SITE.pages
+FOR EACH ROW
+WHEN (new.p_ID IS NULL)
+  BEGIN
+    SELECT p_SEQ.NEXTVAL
+    INTO :new.p_ID
+    FROM dual;
+  END;
+
+
+CREATE TABLE TASK_SITE.reviews (
+  r_id       NUMBER(11)   NOT NULL,
+  r_category NUMBER(11)   NOT NULL,
+  r_header   VARCHAR(255) NOT NULL,
+  r_text     VARCHAR(255) NOT NULL,
+  r_dt       TIMESTAMP    NOT NULL,
+  PRIMARY KEY (r_id)
+);
+
+CREATE SEQUENCE r_seq;
+
+
+CREATE OR REPLACE TRIGGER r_trig_seq
+BEFORE INSERT ON TASK_SITE.reviews
+FOR EACH ROW
+WHEN (new.r_ID IS NULL)
+  BEGIN
+    SELECT r_SEQ.NEXTVAL
+    INTO :new.r_ID
+    FROM dual;
+  END;
+
+
+CREATE TABLE TASK_SITE.reviews_categories (
+  rc_id   NUMBER(11)   NOT NULL,
+  rc_name VARCHAR(255) NOT NULL,
+  PRIMARY KEY (rc_id)
+);
+
+CREATE SEQUENCE rc_seq;
+
+
+CREATE OR REPLACE TRIGGER rc_trig_seq
+BEFORE INSERT ON TASK_SITE.reviews_categories
+FOR EACH ROW
+WHEN (new.rc_ID IS NULL)
+  BEGIN
+    SELECT rc_SEQ.NEXTVAL
+    INTO :new.rc_ID
+    FROM dual;
+  END;
+
+
+ALTER TABLE TASK_SITE.m2m_banners_pages
+  ADD CONSTRAINT m2m_banners_pages_ibfk_2 FOREIGN KEY (p_id) REFERENCES TASK_SITE.pages (p_id) ON DELETE CASCADE;
+ALTER TABLE TASK_SITE.m2m_banners_pages
+  ADD CONSTRAINT m2m_banners_pages_ibfk_1 FOREIGN KEY (b_id) REFERENCES TASK_SITE.banners (b_id) ON DELETE CASCADE;
+
+ALTER TABLE TASK_SITE.news
+  ADD CONSTRAINT news_ibfk_1 FOREIGN KEY (n_category) REFERENCES TASK_SITE.news_categories (nc_id) ON DELETE CASCADE;
+
+ALTER TABLE TASK_SITE.pages
+  ADD CONSTRAINT pages_ibfk_1 FOREIGN KEY (p_parent) REFERENCES TASK_SITE.pages (p_id) ON DELETE CASCADE;
+
+ALTER TABLE TASK_SITE.reviews
+  ADD CONSTRAINT reviews_ibfk_1 FOREIGN KEY (r_category) REFERENCES TASK_SITE.reviews_categories (rc_id) ON DELETE CASCADE;
